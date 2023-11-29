@@ -71,6 +71,30 @@ export const findUserById = async (id: string): Promise<UserType | null> => {
 	});
 };
 
+export const findUserByNickname = async (nickname: string): Promise<UserType | null> => {
+	return sql<UserType | null>(async (connection) => {
+		const [rows] = await connection.execute<any>(
+			'SELECT * FROM capylandbot_users WHERE LOWER(nickname) = LOWER(?)',
+			[nickname]
+		);
+
+		if (rows.length > 0) {
+			return rows[0];
+		} else {
+			return null;
+		}
+	});
+};
+
+export const setUserNickname = async (id: string, nickname: string): Promise<void> => {
+	await sql<void>(async (connection) => {
+		await connection.execute('UPDATE capylandbot_users SET nickname = ? WHERE id = ?', [
+			nickname,
+			id
+		]);
+	});
+};
+
 export const getUserById = async (id: string): Promise<UserType> => {
 	const existingUser = await findUserById(id);
 
@@ -87,6 +111,25 @@ export const getUserById = async (id: string): Promise<UserType> => {
 		nickname: '',
 		discord_id: ''
 	};
+};
+
+export type PlayerType = {
+	uuid: string;
+	user_id: string;
+};
+
+export const findPlayerByUserId = async (user_id: string): Promise<PlayerType | null> => {
+	return sql<PlayerType | null>(async (connection) => {
+		const [rows] = await connection.execute<any>('SELECT * FROM players WHERE user_id = ?', [
+			user_id
+		]);
+
+		if (rows.length > 0) {
+			return rows[0];
+		} else {
+			return null;
+		}
+	});
 };
 
 export type SessionType = {

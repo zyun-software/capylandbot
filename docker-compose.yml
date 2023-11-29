@@ -6,6 +6,7 @@ services:
     working_dir: /home/node/app
     volumes:
       - ./:/home/node/app
+      - /root/minecraft/data/whitelist.json:/home/node/app/whitelist.json:r
 
   dev:
     extends:

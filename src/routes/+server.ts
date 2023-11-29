@@ -1,4 +1,9 @@
-import { TG_SECRET_TOKEN, URL_PANEL } from '$env/static/private';
+import {
+	DISCORD_BOT_CLIENT_ID,
+	DISCORD_REDIRECT_URL,
+	TG_SECRET_TOKEN,
+	URL_PANEL
+} from '$env/static/private';
 import { getUserById, telegram } from '$lib/server';
 import { text } from '@sveltejs/kit';
 
@@ -9,7 +14,7 @@ export async function POST({ request }) {
 		return text('Невірний токен доступу');
 	}
 
-  const data = await request.json();
+	const data = await request.json();
 
 	const chat_id = data?.message?.from?.id ?? null;
 
@@ -21,28 +26,35 @@ export async function POST({ request }) {
 		[
 			{
 				web_app: { url: URL_PANEL },
-				text:
-					'🎛 Перейти до панелі'
+				text: '🎛 Перейти до панелі'
 			}
-		],
+		]
 	];
 
 	const user = await getUserById(chat_id);
 	if (!user.nickname) {
+		const discordUrl =
+			'https://discord.com/oauth2/authorize' +
+			'?response_type=token' +
+			`&client_id=${DISCORD_BOT_CLIENT_ID}` +
+			'&scope=identify' +
+			`&state=${user.id}&` +
+			`redirect_uri=${DISCORD_REDIRECT_URL}`;
+
 		buttons.push([
 			{
-				web_app: { url: URL_PANEL },
-				text:
-					'↘️ Підтягнути псевдонім з Discord'
+				web_app: { url: discordUrl },
+				text: '↘️ Підтягнути псевдонім з Discord'
 			}
 		]);
 	}
 
 	await telegram('sendMessage', {
 		chat_id,
-		text: '🌿 Ласкаво просимо до офіційного бота Долини Капібар! Натискайте кнопку нижче, щоб легко перейти до основного функціоналу та насолоджуватися унікальними можливостями, які пропонує наш бот. 🤖\n\n' +
-			`🆔 Ваш код: <code>${chat_id}</code>\n\n` + 
-			'😊 Дякуємо що обираєте нас!\n\n' + 
+		text:
+			'🌿 Ласкаво просимо до офіційного бота Долини Капібар! Натискайте кнопку нижче, щоб легко перейти до основного функціоналу та насолоджуватися унікальними можливостями, які пропонує наш бот. 🤖\n\n' +
+			`🆔 Ваш код: <code>${chat_id}</code>\n\n` +
+			'😊 Дякуємо що обираєте нас!\n\n' +
 			'🌟 Якщо у вас виникнуть питання чи потрібна допомога, не соромтеся звертатися. Бажаємо приємного користування! 🌟',
 		parse_mode: 'HTML',
 		reply_markup: {
@@ -50,5 +62,5 @@ export async function POST({ request }) {
 		}
 	});
 
-  return text('готово');
+	return text('готово');
 }
