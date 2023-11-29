@@ -1,0 +1,21 @@
+/* Write your global styles here, in PostCSS syntax */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+	font-family: 'Roboto', sans-serif;
+	@apply text-tg-text-color;
+}
+
+a {
+	@apply text-tg-link-color;
+}
+
+button {
+  @apply bg-tg-button-color text-tg-button-text-color rounded p-2;
+}
+
+input {
+  @apply bg-tg-secondary-bg-color p-2 rounded;
+}

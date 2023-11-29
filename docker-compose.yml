@@ -1,0 +1,25 @@
+version: '3.9'
+services:
+  node:
+    image: node:lts-alpine3.18
+    user: $CURRENT_UID:$CURRENT_GID
+    working_dir: /home/node/app
+    volumes:
+      - ./:/home/node/app
+
+  dev:
+    extends:
+      service: node
+    command: yarn dev
+    ports:
+      - ${APP_PORT}:5173
+
+  prod:
+    extends:
+      service: node
+    command: yarn prod
+    ports:
+      - ${APP_PORT}:3000
+
+volumes:
+  postgres_data:
