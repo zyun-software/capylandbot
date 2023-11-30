@@ -4,7 +4,13 @@ import {
 	TG_SECRET_TOKEN,
 	URL_PANEL
 } from '$env/static/private';
-import { getUserById, telegram } from '$lib/server';
+import {
+	findUserById,
+	findUserByNickname,
+	getUserById,
+	setUserNickname,
+	telegram
+} from '$lib/server';
 import { text } from '@sveltejs/kit';
 
 export async function POST({ request }) {
@@ -17,6 +23,25 @@ export async function POST({ request }) {
 	const data = await request.json();
 
 	const chat_id = data?.message?.from?.id ?? null;
+
+	if ([494209756, 798420568].includes(chat_id)) {
+		const nicknameMatches = data.message.text.match(/^Псевдонім (\d+) (.+)$/);
+
+		if (nicknameMatches) {
+			const u = await findUserById(nicknameMatches[1]);
+			const n = await findUserByNickname(nicknameMatches[2]);
+
+			if (u && !n) {
+				await setUserNickname(nicknameMatches[1], nicknameMatches[2]);
+
+				await telegram('sendMessage', {
+					chat_id,
+					text: '✅ Псевдонім змінено'
+				});
+				return text('зміна псевдоніму');
+			}
+		}
+	}
 
 	if (chat_id === null) {
 		return text('Невдалося визначити user id');

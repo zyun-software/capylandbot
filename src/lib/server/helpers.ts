@@ -27,9 +27,14 @@ export const getUser = async (cookies: Cookies) => {
 		throw throwUnauthorized();
 	}
 
-	const id = JSON.parse(decodeURIComponent(userField.split('=')[1])).id;
+	const match = userField.match(/"id":(\d+),/);
+	if (!match) {
+		throw throwUnauthorized();
+	}
 
-  const user = await getUserById(id);
+	// const id = JSON.parse(decodeURIComponent(userField.split('=')[1])).id;
+
+	const user = await getUserById(match[1]);
 
 	return user;
 };
