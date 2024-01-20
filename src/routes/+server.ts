@@ -1,16 +1,5 @@
-import {
-	DISCORD_BOT_CLIENT_ID,
-	DISCORD_REDIRECT_URL,
-	TG_SECRET_TOKEN,
-	URL_PANEL
-} from '$env/static/private';
-import {
-	findUserById,
-	findUserByNickname,
-	getUserById,
-	setUserNickname,
-	telegram
-} from '$lib/server';
+import { TG_SECRET_TOKEN, URL_PANEL } from '$env/static/private';
+import { findUserById, findUserByNickname, setUserNickname, telegram } from '$lib/server';
 import { text } from '@sveltejs/kit';
 
 export async function POST({ request }) {
@@ -24,22 +13,36 @@ export async function POST({ request }) {
 
 	const chat_id = data?.message?.from?.id ?? null;
 
-	if ([494209756, 798420568].includes(chat_id)) {
+	if ([494209756, 798420568, 873687184].includes(chat_id)) {
 		const nicknameMatches = data.message.text.match(/^Псевдонім (\d+) (.+)$/);
 
 		if (nicknameMatches) {
 			const u = await findUserById(nicknameMatches[1]);
 			const n = await findUserByNickname(nicknameMatches[2]);
 
-			if (u && !n) {
-				await setUserNickname(nicknameMatches[1], nicknameMatches[2]);
-
+			if (!u) {
 				await telegram('sendMessage', {
 					chat_id,
-					text: '✅ Псевдонім змінено'
+					text: '⛔️ Код не знайдено'
 				});
-				return text('зміна псевдоніму');
+				return text('');
 			}
+
+			if (n) {
+				await telegram('sendMessage', {
+					chat_id,
+					text: '⛔️ Такий псевдонім вже є'
+				});
+				return text('');
+			}
+
+			await setUserNickname(nicknameMatches[1], nicknameMatches[2]);
+
+			await telegram('sendMessage', {
+				chat_id,
+				text: '✅ Псевдонім змінено'
+			});
+			return text('зміна псевдоніму');
 		}
 	}
 
@@ -56,7 +59,7 @@ export async function POST({ request }) {
 		]
 	];
 
-	const user = await getUserById(chat_id);
+	/*const user = await getUserById(chat_id);
 	if (!user.nickname) {
 		const discordUrl =
 			'https://discord.com/oauth2/authorize' +
@@ -72,7 +75,7 @@ export async function POST({ request }) {
 				text: '↘️ Підтягнути псевдонім з Discord'
 			}
 		]);
-	}
+	}*/
 
 	await telegram('sendMessage', {
 		chat_id,
